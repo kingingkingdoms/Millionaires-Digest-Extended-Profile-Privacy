@@ -1,14 +1,10 @@
 <?php
 /*
-Plugin Name: Simple Buddypress Profile Privacy
-Plugin URI: http://justin-hansen.com/buddypress-profile-privacy
-Description: Allow each user to decide if everyone, only logged in users or only friends can see their profile tabs.
-Version: 0.7.8
-Author: Justin Hansen
-Author URI: http://justin-hansen.com
-Text Domain: simple-buddypress-profile-privacy
-Domain Path: /languages
-License: GPL2
+Plugin Name: Millionaire's Digest Extended Profile Privacy  
+Description: Give users the ability to make their profile private and hide themselves from the member directory.
+Version: 1.0.0
+Author: K&L (Founder of the Millionaire's Digest)
+Author URI: https://millionairedigest.com/
 */
 
 /**
