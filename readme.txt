@@ -9,7 +9,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
-Allow users to block and unblock users and accounts with special thanks and all credits going to Justin Hansen for the original plugin.
+Give users the ability to make their profile private and hide themselves from the member directory with special thanks and all credits going to Justin Hansen for the original plugin.
 
 == Installation ==
 
