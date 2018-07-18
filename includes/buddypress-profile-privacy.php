@@ -1,4 +1,4 @@
-<<?php
+<?php
 
 /**
  * Adds a blank hidden tab for when the content is hidden by privacy settings.
@@ -22,7 +22,7 @@ class SBPP04_Profile_Privacy extends BP_Component {
      */
     public function setup_globals( $args = array() ) {
         parent::setup_globals( array(
-            'slug'          => 'private',
+            'slug'          => 'profile-privacy',
             'has_directory' => false,
         ) );
     }
@@ -35,15 +35,15 @@ class SBPP04_Profile_Privacy extends BP_Component {
             'name'                => __( 'Private', 'simple-buddypress-profile-privacy' ),
             'slug'                => $this->slug,
             'screen_function' => array( $this, 'screen_function_main' ),
-            'default_subnav_slug' => 'private',
+            'default_subnav_slug' => 'sbpp-hidden',
             'position'            => 10000,
         );
 
         $sub_nav[] = array(
-            'name'            => __( 'Overview', 'simple-buddypress-profile-privacy' ),
-            'slug'            => 'overview',
-            'parent_slug'     => 'private',
-            'parent_url'      => bp_displayed_user_domain() . 'private/',
+            'name'            => __( 'Friends Only', 'simple-buddypress-profile-privacy' ),
+            'slug'            => 'sbpp-hidden',
+            'parent_slug'     => 'profile-privacy',
+            'parent_url'      => bp_displayed_user_domain() . 'profile-privacy/',
             'screen_function' => array( $this, 'screen_function_main' ),
         );
 
@@ -63,7 +63,7 @@ class SBPP04_Profile_Privacy extends BP_Component {
      */
     public function main_content()
     {
-        echo "<p>" . bp_get_user_firstname( bp_get_displayed_user_fullname() ) . " has chosen to only allow [insert pronoun] friends to view [insert pronoun] profile. If you would like to become friends with [insert name], then please send [insert pronoun] a friend request.";
+        echo "<p>" . bp_core_get_user_displayname( bp_displayed_user_id() ) . " has chosen to limit profile access to friends only.";
 		if( is_user_logged_in() ) {
 			printf( __( " Use the button below to send a friend request to %s", 'simple-buddypress-profile-privacy' ), bp_core_get_user_displayname( bp_displayed_user_id() ) );
 			echo bp_add_friend_button();
@@ -90,9 +90,9 @@ function sbpp04_profile_settings_nav() {
 		'position' => 30,
 		'screen_function' => 'sbpp04_privacy_screen',
 		'show_for_displayed_user' => true,
-		'parent_url'          => trailingslashit( $bp->loggedin_user->domain . $bp->slug . "settings" ),
+		'parent_url'          => trailingslashit( $bp->displayed_user->domain . $bp->slug . "settings" ),
 		'parent_slug'         => 'settings',
-		'user_has_access' => bp_core_can_edit_settings()
+		'user_has_access' => is_super_admin() || bp_is_my_profile()
 	) );
 
 }
@@ -115,7 +115,7 @@ function sbpp04_privacy_screen_content() {
     $valid_view_array = array( SBPP04_VIEW_LOGGED_IN, SBPP04_VIEW_FRIENDS, SBPP04_VIEW_EVERYONE );
 	$valid_hide_dir_array = array ( "Yes", "No" );
 
-	$curr_user = get_current_user_id();
+	$curr_user = bp_displayed_user_id();
 	$curr_privacy = get_user_meta( $curr_user, SBPP04_PRIVACY_SETTING_KEY, true );
 	$hide_dir = get_user_meta( $curr_user, SBPP04_HIDE_DIRECTORY_KEY, true );
 	if( isset( $_POST['can_view_profile'] ) ) {
@@ -141,7 +141,6 @@ function sbpp04_privacy_screen_content() {
 			<p><label for="can_view_proile"><?php _e ('Who can view your profile?', 'simple-buddypress-profile-privacy'); ?></label>
 			<select name="can_view_profile">
 				<option value="<?php echo esc_attr( SBPP04_VIEW_EVERYONE ); ?>"<?php if( $curr_privacy == SBPP04_VIEW_EVERYONE ) echo ' selected="selected"' ?>><?php _e ('Everyone', 'simple-buddypress-profile-privacy'); ?></option>
-				<option value="<?php echo esc_attr( SBPP04_VIEW_LOGGED_IN ); ?>"<?php if( $curr_privacy == SBPP04_VIEW_LOGGED_IN ) echo ' selected="selected"' ?>><?php _e ('Only Logged In Users', 'simple-buddypress-profile-privacy'); ?></option>
                 <?php if( SBPP04_FRIENDS_ACTIVE ): ?>
 				    <option value="<?php echo esc_attr( SBPP04_VIEW_FRIENDS ); ?>"<?php if( $curr_privacy == SBPP04_VIEW_FRIENDS ) echo ' selected="selected"' ?>><?php _e ('Only Friends', 'simple-buddypress-profile-privacy'); ?></option>
                 <?php endif; ?>
@@ -171,7 +170,7 @@ function sbpp04_privacy_check(){
                 if( SBPP04_FRIENDS_ACTIVE ){
                     $is_friend = bp_is_friend( bp_displayed_user_id() );
                     if( $is_friend != 'is_friend' && !bp_is_my_profile() && !bp_is_current_component( 'bpp' ) ) {
-                        wp_redirect( bp_displayed_user_domain() . 'private' );
+                        wp_redirect( bp_displayed_user_domain() . 'profile-privacy/' );
                         exit();
                     }else{
                         sbpp04_privacy_redirect( $is_friend );
@@ -180,15 +179,6 @@ function sbpp04_privacy_check(){
                     sbpp04_privacy_redirect();
                 }
 				break;
-			//Only show profile if the user is logged in. Otherwise redirect to register page.
-			case SBPP04_VIEW_LOGGED_IN:
-				if( !is_user_logged_in() && bp_is_user() ) {
-					wp_redirect( wp_registration_url() );
-					exit();
-				}else{
-					sbpp04_privacy_redirect();
-                }
-                break;
             default:
                 sbpp04_privacy_redirect();
                 break;
@@ -214,9 +204,9 @@ add_filter( 'bp_get_total_member_count', 'sbpp04_update_member_count' );
 //Setup reusable code for when users don't need to see privacy page.
 function sbpp04_privacy_redirect( $is_friend = '' ){
     if ( !bp_is_current_component( 'bpp' ) ) {
-        bp_core_remove_nav_item( 'private' );
+        bp_core_remove_nav_item( 'profile-privacy' );
     }elseif ( $is_friend == 'is_friend' || !SBPP04_FRIENDS_ACTIVE ) {
-        bp_core_remove_nav_item( 'private' );
+        bp_core_remove_nav_item( 'profile-privacy' );
         wp_redirect( bp_displayed_user_domain() );
         exit();
     }
