@@ -88,7 +88,7 @@ function sbpp04_profile_settings_nav() {
 	bp_core_new_subnav_item( array(
 		'name' => __( 'Privacy', 'simple-buddypress-profile-privacy' ),
 		'slug' => 'privacy-settings',
-		'position' => 30,
+		'position' => 16,
 		'screen_function' => 'sbpp04_privacy_screen',
 		'show_for_displayed_user' => true,
 		'parent_url'          => trailingslashit( $bp->displayed_user->domain . $bp->slug . "settings" ),
